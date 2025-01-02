@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Air Quality Prediction</title>
+    <!-- Include Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .form-container {
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 100%;
+            max-width: 400px;
+            margin-top: 20px;
+        }
+
+        h1 {
+            color: #0d6efd;
+            margin-bottom: 20px;
+        }
+
+        .btn-primary {
+            width: 100%;
+        }
+
+        .results-container {
+            background-color: #e9f7fa;
+            border: 1px solid #d1e7dd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Air Quality Prediction</h1>
+    <div class="form-container">
+        <form id="prediction-form">
+            <div class="mb-3">
+                <label for="date" class="form-label">Select Date:</label>
+                <input type="date" id="date" name="date" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="x-coordinate" class="form-label">Enter X Coordinate (WGS84):</label>
+                <input type="number" id="x-coordinate" name="x_wgs84" class="form-control" step="any" value="43.6045" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="y-coordinate" class="form-label">Enter Y Coordinate (WGS84):</label>
+                <input type="number" id="y-coordinate" name="y_wgs84" class="form-control" step="any" value="1.4442" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Predict</button>
+        </form>
+    </div>
+    
+    <div id="results" class="results-container" style="display: none;">
+        <p id="dateElement"></p>
+        <p id="coordinates"></p> <!-- Added coordinates element -->
+        <p id="predicted-quality"></p>
+    </div>
+
+    <!-- Include Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById("prediction-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const date = document.getElementById("date").value;
+            const xCoordinate = document.getElementById("x-coordinate").value;
+            const yCoordinate = document.getElementById("y-coordinate").value;
+
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    date_input: date,
+                    x_wgs84: parseFloat(xCoordinate),
+                    y_wgs84: parseFloat(yCoordinate)
+                })
+            });
+
+            const data = await response.json();
+            const dateElement = document.getElementById("dateElement");
+            const coordinates = document.getElementById("coordinates");
+            const predictedQuality = document.getElementById("predicted-quality");
+            const resultsContainer = document.getElementById("results");
+
+            dateElement.textContent = `Date: ${data.date}`;
+            coordinates.textContent = `X: ${data.coordinates.x_wgs84} - Y: ${data.coordinates.y_wgs84}`;
+            predictedQuality.textContent = `Predicted Category : ${data.category}`;
+
+            resultsContainer.style.display = "block"; // Ensure the results container is shown
+        });
+    </script>
+</body>
+</html>
