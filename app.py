@@ -173,6 +173,7 @@ def upload_raw_data_s3(bucket_name, file_path, new_data):
     
     print(f"File {file_path} updated successfully in bucket {bucket_name}.")
 
+
 # Example usage
 bucket_name = os.getenv('BUCKET_NAME')
 file_path = 'transfer/air_quality_data/Air_Quality_Occitanie_Update.csv'
