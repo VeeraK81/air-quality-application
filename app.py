@@ -178,8 +178,7 @@ bucket_name = os.getenv('BUCKET_NAME')
 file_path = 'transfer/air_quality_data/Air_Quality_Occitanie_Update.csv'
 new_data = """
 date_ech,code_qual,lib_qual,coul_qual,date_dif,source,type_zone,code_zone,lib_zone,code_no2,code_so2,code_o3,code_pm10,code_pm25,x_wgs84,y_wgs84,x_reg,y_reg,epsg_reg,ObjectId,x,y
-12/6/2024 12:00:00 AM,2,Moyen,#50CCAA,12/5/2024 9:00:00 AM,Atmo-Occitanie,EPCI,200066223,CC Arize Lèze,1,1,2,1,1,1.41493748413552,43.1798303556942,571047,6232472,2154,1,571047.014532619,6232472.20325349
-12/6/2024 12:00:00 AM,2,Moyen,#50CCAA,12/5/2024 9:00:00 AM,Atmo-Occitanie,EPCI,200040905,CC Carmausin-Ségala,1,1,2,1,1,2.16642592656936,44.0562870012488,633209,6328940,2154,2,633209.459138345,6328939.757962
+13/6/2024 12:00:00 AM,2,Moyen,#50CCAA,12/5/2024 9:00:00 AM,Atmo-Occitanie,EPCI,200066223,CC Arize Lèze,1,1,2,1,1,1.41493748413552,43.1798303556942,571047,6232472,2154,1,571047.014532619,6232472.20325349
 """
 
 
