@@ -137,10 +137,7 @@ def main(input_data):
 
 
 
-import boto3
-import pandas as pd
-from io import StringIO
-import os
+
 
 def upload_raw_data_s3(bucket_name, file_key, new_data):
     s3_client = boto3.client(
@@ -232,6 +229,8 @@ def predict():
         }
 
         logger.info(f"Prediction result: {result}")
+        
+        upload_raw_data_s3(bucket_name, file_key, new_data)
 
         return jsonify(response)
 
@@ -241,7 +240,7 @@ def predict():
 
 
 if __name__ == "__main__":
-    upload_raw_data_s3(bucket_name, file_key, new_data)
+    
     app.run(host='0.0.0.0', port=7860)
     
 
