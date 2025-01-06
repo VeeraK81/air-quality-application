@@ -170,8 +170,8 @@ def upload_raw_data_s3(bucket_name, file_key, new_data):
     print(f"File {file_key} updated successfully in bucket {bucket_name}.")
 
 # Example usage
-bucket_name = 'your-s3-bucket-name'
-file_key = 'path/to/your/file.csv'
+bucket_name = os.getenv('BUCKET_NAME')
+file_key = 'transfer/air_quality_data/Air_Quality_Occitanie_Update.csv'
 new_data = """
 date_ech,code_qual,lib_qual,coul_qual,date_dif,source,type_zone,code_zone,lib_zone,code_no2,code_so2,code_o3,code_pm10,code_pm25,x_wgs84,y_wgs84,x_reg,y_reg,epsg_reg,ObjectId,x,y
 12/6/2024 12:00:00 AM,2,Moyen,#50CCAA,12/5/2024 9:00:00 AM,Atmo-Occitanie,EPCI,200066223,CC Arize Lèze,1,1,2,1,1,1.41493748413552,43.1798303556942,571047,6232472,2154,1,571047.014532619,6232472.20325349
