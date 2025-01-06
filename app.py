@@ -257,8 +257,6 @@ def predict():
 
         logger.info(f"Prediction result: {result}")
         
-        upload_raw_data_s3(bucket_name, file_path, new_data)
-
         return jsonify(response)
 
     except Exception as e:

@@ -79,6 +79,21 @@
             <button type="button" id="upload-button" class="btn btn-secondary">Upload</button>
         </form>
     </div>
+
+    <div class="form-container">
+        <form id="upload-form" enctype="multipart/form-data">
+            
+    
+            <!-- File upload field -->
+            <div class="mb-3">
+                <label for="file" class="form-label">Upload File:</label>
+                <input type="file" id="file" name="file" class="form-control" required>
+            </div>
+    
+            <!-- Separate buttons for Prediction and Upload -->
+            <button type="button" id="upload-button" class="btn btn-secondary">Upload</button>
+        </form>
+    </div>
     
     <div id="results" class="results-container" style="display: none;">
         <p id="dateElement"></p>
@@ -163,6 +178,5 @@
             alert("File uploaded successfully: " + uploadData.message);
         });
     </script>
-s    
 </body>
 </html>
