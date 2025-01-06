@@ -12,7 +12,7 @@ from datetime import datetime
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import logging
-from flask_restx import Api, Resource
+from flasgger import Swagger
 
 
 

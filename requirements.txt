@@ -1,10 +1,19 @@
-flask
-gunicorn
-Flask-Cors
-mlflow
-boto3
-transformers==4.34.0
-numpy==1.26.4
+# flask
+# gunicorn
+# Flask-Cors
+# mlflow
+# boto3
+# transformers==4.34.0
+# numpy==1.26.4
+# scikit-learn==1.0.2
+# pandas==1.4.2
+
+fastapi==0.100.0
+uvicorn==0.23.2
+boto3==1.28.67
+pandas==2.1.1
 scikit-learn==1.0.2
-pandas==1.4.2
-flask-restx==1.1.0
+mlflow==2.8.0
+python-multipart==0.0.6
+aiofiles==23.1.0
+pydantic==1.10.9
