@@ -12,6 +12,8 @@ from datetime import datetime
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import logging
+from flask_restx import Api, Resource
+
 
 
 # Configure logging
@@ -19,6 +21,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+api = Api(app, title="Air Quality API", description="API documentation", version="1.0.0")
 CORS(app)
 
 # Load data from S3 (this assumes that your dataset is in CSV format)
