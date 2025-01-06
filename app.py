@@ -72,6 +72,7 @@ def download_model_from_s3(model_key, bucket_name):
     model = pickle.loads(model_data)  # Deserialize to get the model object
     return model
 
+
 # Function to preprocess input data for prediction
 def preprocess_input(input_data):
     """
@@ -135,6 +136,53 @@ def main(input_data):
     return predictions
 
 
+
+import boto3
+import pandas as pd
+from io import StringIO
+import os
+
+def upload_raw_data_s3(bucket_name, file_key, new_data):
+    s3_client = boto3.client(
+        's3',
+        aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+        aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+    )
+    
+    # Step 1: Download the existing file
+    try:
+        response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
+        existing_data = response['Body'].read().decode('utf-8')
+        existing_df = pd.read_csv(StringIO(existing_data))
+    except s3_client.exceptions.NoSuchKey:
+        # If the file doesn't exist, create a new DataFrame
+        print(f"File {file_key} not found in bucket {bucket_name}. Creating a new file.")
+        existing_df = pd.DataFrame()
+
+    # Step 2: Create a DataFrame for the new data, skipping the header in the append
+    new_data_df = pd.read_csv(StringIO(new_data))
+
+    # Step 3: Append the new data to the existing DataFrame
+    updated_df = pd.concat([existing_df, new_data_df], ignore_index=True)
+
+    # Step 4: Upload the updated file back to S3
+    csv_buffer = StringIO()
+    updated_df.to_csv(csv_buffer, index=False)  # Ensure the header is written only once
+    s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=csv_buffer.getvalue())
+    
+    print(f"File {file_key} updated successfully in bucket {bucket_name}.")
+
+# Example usage
+bucket_name = 'your-s3-bucket-name'
+file_key = 'path/to/your/file.csv'
+new_data = """
+date_ech,code_qual,lib_qual,coul_qual,date_dif,source,type_zone,code_zone,lib_zone,code_no2,code_so2,code_o3,code_pm10,code_pm25,x_wgs84,y_wgs84,x_reg,y_reg,epsg_reg,ObjectId,x,y
+12/6/2024 12:00:00 AM,2,Moyen,#50CCAA,12/5/2024 9:00:00 AM,Atmo-Occitanie,EPCI,200066223,CC Arize Lèze,1,1,2,1,1,1.41493748413552,43.1798303556942,571047,6232472,2154,1,571047.014532619,6232472.20325349
+12/6/2024 12:00:00 AM,2,Moyen,#50CCAA,12/5/2024 9:00:00 AM,Atmo-Occitanie,EPCI,200040905,CC Carmausin-Ségala,1,1,2,1,1,2.16642592656936,44.0562870012488,633209,6328940,2154,2,633209.459138345,6328939.757962
+"""
+
+
+
 # Flask route for home page
 @app.route('/')
 def index():
@@ -193,5 +241,7 @@ def predict():
 
 
 if __name__ == "__main__":
+    upload_raw_data_s3(bucket_name, file_key, new_data)
     app.run(host='0.0.0.0', port=7860)
+    
 
