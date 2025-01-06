@@ -139,7 +139,7 @@ def main(input_data):
 
 
 
-def upload_raw_data_s3(bucket_name, file_key, new_data):
+def upload_raw_data_s3(bucket_name, file_path, new_data):
     s3_client = boto3.client(
         's3',
         aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
@@ -171,7 +171,7 @@ def upload_raw_data_s3(bucket_name, file_key, new_data):
 
 # Example usage
 bucket_name = os.getenv('BUCKET_NAME')
-file_key = 'transfer/air_quality_data/Air_Quality_Occitanie_Update.csv'
+file_path = 'transfer/air_quality_data/Air_Quality_Occitanie_Update.csv'
 new_data = """
 date_ech,code_qual,lib_qual,coul_qual,date_dif,source,type_zone,code_zone,lib_zone,code_no2,code_so2,code_o3,code_pm10,code_pm25,x_wgs84,y_wgs84,x_reg,y_reg,epsg_reg,ObjectId,x,y
 12/6/2024 12:00:00 AM,2,Moyen,#50CCAA,12/5/2024 9:00:00 AM,Atmo-Occitanie,EPCI,200066223,CC Arize Lèze,1,1,2,1,1,1.41493748413552,43.1798303556942,571047,6232472,2154,1,571047.014532619,6232472.20325349
@@ -230,7 +230,7 @@ def predict():
 
         logger.info(f"Prediction result: {result}")
         
-        upload_raw_data_s3(bucket_name, file_key, new_data)
+        upload_raw_data_s3(bucket_name, file_path, new_data)
 
         return jsonify(response)
 
