@@ -172,22 +172,45 @@ def upload_raw_data_s3(bucket_name, file_path, new_data):
     s3_client.put_object(Bucket=bucket_name, Key=file_path, Body=csv_buffer.getvalue())
     
     print(f"File {file_path} updated successfully in bucket {bucket_name}.")
-
-
-# Example usage
-bucket_name = os.getenv('BUCKET_NAME')
-file_path = 'transfer/air_quality_data/Air_Quality_Occitanie_Update.csv'
-new_data = """
-date_ech,code_qual,lib_qual,coul_qual,date_dif,source,type_zone,code_zone,lib_zone,code_no2,code_so2,code_o3,code_pm10,code_pm25,x_wgs84,y_wgs84,x_reg,y_reg,epsg_reg,ObjectId,x,y
-13/6/2024 12:00:00 AM,2,Moyen,#50CCAA,12/5/2024 9:00:00 AM,Atmo-Occitanie,EPCI,200066223,CC Arize Lèze,1,1,2,1,1,1.41493748413552,43.1798303556942,571047,6232472,2154,1,571047.014532619,6232472.20325349
-"""
-
-
+    
+    
 
 # Flask route for home page
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    try:
+        # Check if a file was uploaded
+        if 'file' not in request.files:
+            return jsonify({"error": "No file part in the request"}), 400
+
+        file = request.files['file']
+
+        # Check if the file has a valid filename
+        if file.filename == '':
+            return jsonify({"error": "No selected file"}), 400
+
+        # Read the content of the uploaded file
+        new_data = file.read().decode('utf-8')
+
+        # Define S3 bucket and file path
+        bucket_name = os.getenv('BUCKET_NAME')
+        file_path = 'transfer/air_quality_data/Air_Quality_Occitanie_Update.csv'
+
+        # Upload the new data to S3
+        upload_raw_data_s3(bucket_name, file_path, new_data)
+
+        return jsonify({"message": "File uploaded and updated successfully"}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
 
 # Flask route for prediction
 @app.route('/predict', methods=['POST'])

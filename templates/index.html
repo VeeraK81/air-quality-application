@@ -52,22 +52,28 @@
 <body>
     <h1>Air Quality Prediction</h1>
     <div class="form-container">
-        <form id="prediction-form">
+        <form id="prediction-form" enctype="multipart/form-data">
             <div class="mb-3">
                 <label for="date" class="form-label">Select Date:</label>
                 <input type="date" id="date" name="date" class="form-control" required>
             </div>
-
+    
             <div class="mb-3">
                 <label for="x-coordinate" class="form-label">Enter X Coordinate (WGS84):</label>
                 <input type="number" id="x-coordinate" name="x_wgs84" class="form-control" step="any" value="43.6045" required>
             </div>
-
+    
             <div class="mb-3">
                 <label for="y-coordinate" class="form-label">Enter Y Coordinate (WGS84):</label>
                 <input type="number" id="y-coordinate" name="y_wgs84" class="form-control" step="any" value="1.4442" required>
             </div>
-
+    
+            <!-- File upload field -->
+            <div class="mb-3">
+                <label for="file" class="form-label">Upload File:</label>
+                <input type="file" id="file" name="file" class="form-control" required>
+            </div>
+    
             <button type="submit" class="btn btn-primary">Predict</button>
         </form>
     </div>
@@ -83,12 +89,14 @@
     <script>
         document.getElementById("prediction-form").addEventListener("submit", async (e) => {
             e.preventDefault();
-
+    
+            // Collect form data (date and coordinates)
             const date = document.getElementById("date").value;
             const xCoordinate = document.getElementById("x-coordinate").value;
             const yCoordinate = document.getElementById("y-coordinate").value;
-
-            const response = await fetch('/predict', {
+    
+            // Make the first request to /predict (prediction based on coordinates and date)
+            const predictResponse = await fetch('/predict', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -99,19 +107,64 @@
                     y_wgs84: parseFloat(yCoordinate)
                 })
             });
-
-            const data = await response.json();
+    
+            const predictData = await predictResponse.json();
+    
+            if (!predictResponse.ok) {
+                alert("Error in prediction: " + predictData.error);
+                return;
+            }
+    
+            // Handle prediction response (display result)
             const dateElement = document.getElementById("dateElement");
             const coordinates = document.getElementById("coordinates");
             const predictedQuality = document.getElementById("predicted-quality");
             const resultsContainer = document.getElementById("results");
-
-            dateElement.textContent = `Date: ${data.date}`;
-            coordinates.textContent = `X: ${data.coordinates.x_wgs84} - Y: ${data.coordinates.y_wgs84}`;
-            predictedQuality.textContent = `Predicted Category : ${data.category}`;
-
+    
+            dateElement.textContent = `Date: ${predictData.date}`;
+            coordinates.textContent = `X: ${predictData.coordinates.x_wgs84} - Y: ${predictData.coordinates.y_wgs84}`;
+            predictedQuality.textContent = `Predicted Category: ${predictData.category}`;
+    
             resultsContainer.style.display = "block"; // Ensure the results container is shown
+    
+            // Now, prepare for file upload (if applicable)
+            const fileInput = document.getElementById("file");
+            const file = fileInput.files[0]; // Get the file from the input
+    
+            if (file) {
+                // Prepare form data (including file)
+                const formData = new FormData();
+                formData.append("file", file); // Append file
+                formData.append("date_input", date); // Append date
+                formData.append("x_wgs84", parseFloat(xCoordinate)); // Append X coordinate
+                formData.append("y_wgs84", parseFloat(yCoordinate)); // Append Y coordinate
+    
+                // Make the AJAX request to /upload route
+                try {
+                    const uploadResponse = await fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+    
+                    const uploadData = await uploadResponse.json();
+    
+                    if (uploadResponse.ok) {
+                        // Display the results if the file is uploaded successfully
+                        document.getElementById('results').style.display = 'block';
+                        document.getElementById('dateElement').textContent = `Date: ${document.getElementById('date').value}`;
+                        document.getElementById('coordinates').textContent = `Coordinates: ${document.getElementById('x-coordinate').value}, ${document.getElementById('y-coordinate').value}`;
+                        document.getElementById('predicted-quality').textContent = 'Prediction: ' + uploadData.message;
+                    } else {
+                        alert('Error in file upload: ' + uploadData.error);
+                    }
+    
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred while uploading the file.');
+                }
+            }
         });
     </script>
+    
 </body>
 </html>
