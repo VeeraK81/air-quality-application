@@ -148,12 +148,12 @@ def upload_raw_data_s3(bucket_name, file_path, new_data):
     
     # Step 1: Download the existing file
     try:
-        response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
+        response = s3_client.get_object(Bucket=bucket_name, Key=file_path)
         existing_data = response['Body'].read().decode('utf-8')
         existing_df = pd.read_csv(StringIO(existing_data))
     except s3_client.exceptions.NoSuchKey:
         # If the file doesn't exist, create a new DataFrame
-        print(f"File {file_key} not found in bucket {bucket_name}. Creating a new file.")
+        print(f"File {file_path} not found in bucket {bucket_name}. Creating a new file.")
         existing_df = pd.DataFrame()
 
     # Step 2: Create a DataFrame for the new data, skipping the header in the append
@@ -165,9 +165,9 @@ def upload_raw_data_s3(bucket_name, file_path, new_data):
     # Step 4: Upload the updated file back to S3
     csv_buffer = StringIO()
     updated_df.to_csv(csv_buffer, index=False)  # Ensure the header is written only once
-    s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=csv_buffer.getvalue())
+    s3_client.put_object(Bucket=bucket_name, Key=file_path, Body=csv_buffer.getvalue())
     
-    print(f"File {file_key} updated successfully in bucket {bucket_name}.")
+    print(f"File {file_path} updated successfully in bucket {bucket_name}.")
 
 # Example usage
 bucket_name = os.getenv('BUCKET_NAME')
