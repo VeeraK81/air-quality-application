@@ -143,7 +143,7 @@ def main(input_data):
 
 
 
-def upload_raw_data_s3(bucket_name, file_path, new_data):
+def upload_raw_data_snowflake(bucket_name, new_data, s3_file_path_transfer):
     s3_client = boto3.client(
         's3',
         aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
@@ -152,12 +152,12 @@ def upload_raw_data_s3(bucket_name, file_path, new_data):
     
     # Step 1: Download the existing file
     try:
-        response = s3_client.get_object(Bucket=bucket_name, Key=file_path)
+        response = s3_client.get_object(Bucket=bucket_name, Key=s3_file_path_transfer)
         existing_data = response['Body'].read().decode('utf-8')
         existing_df = pd.read_csv(StringIO(existing_data))
     except s3_client.exceptions.NoSuchKey:
         # If the file doesn't exist, create a new DataFrame
-        print(f"File {file_path} not found in bucket {bucket_name}. Creating a new file.")
+        print(f"File {s3_file_path_transfer} not found in bucket {bucket_name}. Creating a new file.")
         existing_df = pd.DataFrame()
 
     # Step 2: Create a DataFrame for the new data, skipping the header in the append
@@ -169,9 +169,41 @@ def upload_raw_data_s3(bucket_name, file_path, new_data):
     # Step 4: Upload the updated file back to S3
     csv_buffer = StringIO()
     updated_df.to_csv(csv_buffer, index=False)  # Ensure the header is written only once
-    s3_client.put_object(Bucket=bucket_name, Key=file_path, Body=csv_buffer.getvalue())
+    s3_client.put_object(Bucket=bucket_name, Key=s3_file_path_transfer, Body=csv_buffer.getvalue())
     
-    print(f"File {file_path} updated successfully in bucket {bucket_name}.")
+    print(f"File {s3_file_path_transfer} updated successfully in bucket {bucket_name}.")
+
+
+def upload_raw_data_s3(bucket_name, new_data, s3_file_path_append):
+    s3_client = boto3.client(
+        's3',
+        aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+        aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+    )
+    
+    # Step 1: Download the existing file
+    # to append in raw data for using ml train 
+    try:
+        response = s3_client.get_object(Bucket=bucket_name, Key=s3_file_path_append)
+        existing_data = response['Body'].read().decode('utf-8')
+        existing_df = pd.read_csv(StringIO(existing_data))
+    except s3_client.exceptions.NoSuchKey:
+        # If the file doesn't exist, create a new DataFrame
+        print(f"File {s3_file_path_append} not found in bucket {bucket_name}. Creating a new file.")
+        existing_df = pd.DataFrame()
+
+    # Step 2: Create a DataFrame for the new data, skipping the header in the append
+    new_data_df = pd.read_csv(StringIO(new_data))
+
+    # Step 3: Append the new data to the existing DataFrame
+    updated_df = pd.concat([existing_df, new_data_df], ignore_index=True)
+
+    # Step 4: Upload the updated file back to S3
+    csv_buffer = StringIO()
+    updated_df.to_csv(csv_buffer, index=False)  # Ensure the header is written only once
+    s3_client.put_object(Bucket=bucket_name, Key=s3_file_path_append, Body=csv_buffer.getvalue())
+    
+    print(f"File {s3_file_path_append} updated successfully in bucket {bucket_name}.")
     
     
 
@@ -199,10 +231,13 @@ def upload_file():
 
         # Define S3 bucket and file path
         bucket_name = os.getenv('BUCKET_NAME')
-        file_path = 'transfer/air_quality_data/Air_Quality_Occitanie_Update.csv'
+        s3_file_path_transfer = 'transfer/air_quality_data/Air_Quality_Occitanie_Update.csv'
+        s3_file_path_append = 'ai-pipeline-solution/air-quality-dataset/Air_Quality_Occitanie.csv'
 
         # Upload the new data to S3
-        upload_raw_data_s3(bucket_name, file_path, new_data)
+        upload_raw_data_s3(bucket_name, new_data, s3_file_path_append)
+        
+        upload_raw_data_snowflake(bucket_name, new_data, s3_file_path_transfer)
 
         return jsonify({"message": "File uploaded and updated successfully"}), 200
 
