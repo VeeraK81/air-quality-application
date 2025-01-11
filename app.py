@@ -42,6 +42,7 @@ def load_data_from_s3(bucket_name, file_key):
 
 # Preprocess the data
 def preprocess_data(df):
+    
     df["date_ech"] = pd.to_datetime(df["date_ech"])  # Convert date to datetime format
     df["year"] = df["date_ech"].dt.year
     df["month"] = df["date_ech"].dt.month
@@ -49,6 +50,7 @@ def preprocess_data(df):
     df["hour"] = df["date_ech"].dt.hour
     df["day_of_week"] = df["date_ech"].dt.dayofweek  # 0=Monday, 6=Sunday
 
+    # define feature columns
     features = ['year', 'month', 'day', 'hour', 'day_of_week', 'x_wgs84', 'y_wgs84']
     target = 'lib_qual'  # Target is the air quality label (classification)
 
@@ -142,7 +144,7 @@ def main(input_data):
 
 
 
-
+# Upload raw data to s3 bucket, snowflake staging will use for replication the existing file
 def upload_raw_data_snowflake(bucket_name, new_data, s3_file_path_transfer):
     s3_client = boto3.client(
         's3',
@@ -173,7 +175,7 @@ def upload_raw_data_snowflake(bucket_name, new_data, s3_file_path_transfer):
     
     print(f"File {s3_file_path_transfer} updated successfully in bucket {bucket_name}.")
 
-
+# Upload raw data to s3 bucket, add append with the existing file
 def upload_raw_data_s3(bucket_name, new_data, s3_file_path_append):
     s3_client = boto3.client(
         's3',
@@ -212,7 +214,7 @@ def upload_raw_data_s3(bucket_name, new_data, s3_file_path_append):
 def index():
     return render_template('index.html')
 
-
+# Flask route for post data file
 @app.route('/upload', methods=['POST'])
 def upload_file():
     try:

@@ -50,62 +50,66 @@
     </style>
 </head>
 <body>
+    <!-- Main heading for the page -->
     <h1>Air Quality Prediction</h1>
+    
+    <!-- Form container for inputting data and making predictions -->
     <div class="form-container">
         <form id="prediction-form" enctype="multipart/form-data">
+            <!-- Date selection input field -->
             <div class="mb-3">
                 <label for="date" class="form-label">Select Date:</label>
                 <input type="date" id="date" name="date" class="form-control" required>
             </div>
     
+            <!-- Input field for X coordinate (latitude in WGS84 format) -->
             <div class="mb-3">
                 <label for="x-coordinate" class="form-label">Enter X Coordinate (WGS84):</label>
                 <input type="number" id="x-coordinate" name="x_wgs84" class="form-control" step="any" value="43.6045" required>
             </div>
     
+            <!-- Input field for Y coordinate (longitude in WGS84 format) -->
             <div class="mb-3">
                 <label for="y-coordinate" class="form-label">Enter Y Coordinate (WGS84):</label>
                 <input type="number" id="y-coordinate" name="y_wgs84" class="form-control" step="any" value="1.4442" required>
             </div>
     
-    
-            <!-- Separate buttons for Prediction and Upload -->
+            <!-- Button to trigger the prediction functionality -->
             <button type="button" id="predict-button" class="btn btn-primary">Predict</button>
         </form>
     </div>
 
+    <!-- Separate form container for file upload -->
     <div class="form-container">
         <form id="upload-form" enctype="multipart/form-data">
-            
-    
-            <!-- File upload field -->
+            <!-- File input for uploading data files -->
             <div class="mb-3">
                 <label for="file" class="form-label">Upload File:</label>
                 <input type="file" id="file" name="file" class="form-control" required>
             </div>
     
-            <!-- Separate buttons for Prediction and Upload -->
+            <!-- Button to trigger the file upload functionality -->
             <button type="button" id="upload-button" class="btn btn-secondary">Upload</button>
         </form>
     </div>
     
+    <!-- Section to display prediction results -->
     <div id="results" class="results-container" style="display: none;">
-        <p id="dateElement"></p>
-        <p id="coordinates"></p> <!-- Added coordinates element -->
-        <p id="predicted-quality"></p>
+        <p id="dateElement"></p> <!-- Displays the selected date -->
+        <p id="coordinates"></p> <!-- Displays the input coordinates -->
+        <p id="predicted-quality"></p> <!-- Displays the predicted air quality category -->
     </div>
-</body>
 
-    <!-- Include Bootstrap JS Bundle -->
+    <!-- Include Bootstrap JS Bundle for UI functionality -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Prediction request handler
+        // Event listener for the "Predict" button
         document.getElementById("predict-button").addEventListener("click", async () => {
-            const date = document.getElementById("date").value;
-            const xCoordinate = document.getElementById("x-coordinate").value;
-            const yCoordinate = document.getElementById("y-coordinate").value;
+            const date = document.getElementById("date").value; // Get selected date
+            const xCoordinate = document.getElementById("x-coordinate").value; // Get X coordinate
+            const yCoordinate = document.getElementById("y-coordinate").value; // Get Y coordinate
     
-            // Make the prediction request to /predict
+            // Send a POST request to the '/predict' endpoint with input data
             const predictResponse = await fetch('/predict', {
                 method: 'POST',
                 headers: {
@@ -118,14 +122,16 @@
                 })
             });
     
+            // Parse the response data
             const predictData = await predictResponse.json();
     
             if (!predictResponse.ok) {
+                // Show an alert if the prediction request fails
                 alert("Error in prediction: " + predictData.error);
                 return;
             }
     
-            // Handle prediction response and display result
+            // Update the results section with prediction data
             const dateElement = document.getElementById("dateElement");
             const coordinates = document.getElementById("coordinates");
             const predictedQuality = document.getElementById("predicted-quality");
@@ -135,40 +141,44 @@
             coordinates.textContent = `X: ${predictData.coordinates.x_wgs84} - Y: ${predictData.coordinates.y_wgs84}`;
             predictedQuality.textContent = `Predicted Category: ${predictData.category}`;
     
-            resultsContainer.style.display = "block"; // Ensure the results container is shown
+            // Show the results container
+            resultsContainer.style.display = "block";
         });
     
-        // Upload request handler
+        // Event listener for the "Upload" button
         document.getElementById("upload-button").addEventListener("click", async () => {
-            const fileInput = document.getElementById("file");
-            const file = fileInput.files[0];
+            const fileInput = document.getElementById("file"); // Get the file input element
+            const file = fileInput.files[0]; // Retrieve the selected file
     
             if (!file) {
+                // Show an alert if no file is selected
                 alert("Please select a file to upload.");
                 return;
             }
     
-            // Prepare form data for file upload
+            // Prepare form data for the upload request
             const formData = new FormData();
-            formData.append("file", file);
-            formData.append("date_input", document.getElementById("date").value);
-            formData.append("x_wgs84", parseFloat(document.getElementById("x-coordinate").value));
-            formData.append("y_wgs84", parseFloat(document.getElementById("y-coordinate").value));
+            formData.append("file", file); // Append the file
+            formData.append("date_input", document.getElementById("date").value); // Append the date
+            formData.append("x_wgs84", parseFloat(document.getElementById("x-coordinate").value)); // Append X coordinate
+            formData.append("y_wgs84", parseFloat(document.getElementById("y-coordinate").value)); // Append Y coordinate
     
-            // Make the file upload request to /upload
+            // Send a POST request to the '/upload' endpoint with the file and additional data
             const uploadResponse = await fetch('/upload', {
                 method: 'POST',
                 body: formData
             });
     
+            // Parse the response data
             const uploadData = await uploadResponse.json();
     
             if (!uploadResponse.ok) {
+                // Show an alert if the upload request fails
                 alert("Error in file upload: " + uploadData.error);
                 return;
             }
     
-            // Handle file upload response and display result
+            // Show a success alert if the file upload succeeds
             alert("File uploaded successfully: " + uploadData.message);
         });
     </script>
